@@ -2,7 +2,6 @@ from fastapi import APIRouter
 import requests
 
 from app.utils.config import NEWS_API_KEY
-from app.services.ai_service import summarize_news
 
 router = APIRouter()
 
@@ -20,21 +19,19 @@ def get_news():
 
     news_list = []
 
-    for article in articles[:5]:
+    priority = 100
 
-        title = article.get("title")
-        description = article.get("description")
-
-        full_text = f"{title}. {description}"
-
-        ai_summary = summarize_news(full_text)
+    for article in articles[:10]:
 
         news_list.append({
-            "title": title,
-            "summary": ai_summary,
+            "title": article.get("title"),
+            "summary": article.get("description"),
+            "priority": priority,
             "image": article.get("urlToImage"),
             "source": article.get("source", {}).get("name"),
             "url": article.get("url")
         })
+
+        priority -= 10
 
     return news_list
