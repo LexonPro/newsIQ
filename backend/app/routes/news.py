@@ -41,3 +41,34 @@ def get_news(category: str):
         priority -= 10
 
     return news_list
+
+
+@router.get("/search/{query}")
+def search_news(query: str):
+
+    url = f"https://newsapi.org/v2/everything?q={query}&apiKey={NEWS_API_KEY}"
+
+    response = requests.get(url)
+
+    data = response.json()
+
+    articles = data.get("articles", [])
+
+    news_list = []
+
+    for article in articles[:10]:
+
+        news_list.append({
+
+            "title": article.get("title"),
+
+            "summary": article.get("description"),
+
+            "image": article.get("urlToImage"),
+
+            "source": article.get("source", {}).get("name"),
+
+            "url": article.get("url")
+        })
+
+    return news_list

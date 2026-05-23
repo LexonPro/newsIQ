@@ -20,4 +20,18 @@ class NewsService {
 
     return jsonDecode(response.body);
   }
+
+  static Future<List<dynamic>> searchNews(
+    String query,
+  ) async {
+
+    final response = await http.get(
+
+      Uri.parse(
+        "$baseUrl/search/$query",
+      ),
+    );
+
+    return jsonDecode(response.body);
+  }
 }
