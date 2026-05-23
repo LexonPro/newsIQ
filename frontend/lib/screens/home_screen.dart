@@ -48,8 +48,12 @@ class _HomeScreenState extends State<HomeScreen> {
       backgroundColor: Colors.black,
 
       appBar: AppBar(
+
         title: const Text("AI News"),
+
         backgroundColor: Colors.black,
+
+        elevation: 0,
       ),
 
       body: Column(
@@ -114,8 +118,11 @@ class _HomeScreenState extends State<HomeScreen> {
                         category.toUpperCase(),
 
                         style: const TextStyle(
+
                           color: Colors.white,
-                          fontWeight: FontWeight.bold,
+
+                          fontWeight:
+                              FontWeight.bold,
                         ),
                       ),
                     ),
@@ -137,15 +144,19 @@ class _HomeScreenState extends State<HomeScreen> {
                     ConnectionState.waiting) {
 
                   return const Center(
-                    child: CircularProgressIndicator(),
+                    child:
+                        CircularProgressIndicator(),
                   );
                 }
 
                 if (snapshot.hasError) {
 
                   return Center(
+
                     child: Text(
+
                       snapshot.error.toString(),
+
                       style: const TextStyle(
                         color: Colors.white,
                       ),
@@ -169,9 +180,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
                     itemCount: news.length,
 
-                    itemBuilder: (context, index) {
+                    itemBuilder:
+                        (context, index) {
 
-                      final article = news[index];
+                      final article =
+                          news[index];
 
                       return NewsCard(
 
@@ -184,7 +197,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                 "No Summary",
 
                         imageUrl:
-                            article["image"] ?? "",
+                            article["image"] ??
+                                "",
 
                         articleUrl:
                             article["url"] ?? "",

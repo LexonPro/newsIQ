@@ -35,6 +35,26 @@ class _BookmarkScreenState
     });
   }
 
+  void removeBookmark(
+    Map<String, dynamic> article,
+  ) async {
+
+    await BookmarkService.removeBookmark(
+      article,
+    );
+
+    loadBookmarks();
+
+    ScaffoldMessenger.of(context)
+        .showSnackBar(
+
+      const SnackBar(
+        content:
+            Text("Bookmark Removed"),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
 
@@ -71,19 +91,47 @@ class _BookmarkScreenState
                 final article =
                     bookmarks[index];
 
-                return NewsCard(
+                return Stack(
 
-                  title:
-                      article["title"],
+                  children: [
 
-                  summary:
-                      article["summary"],
+                    NewsCard(
 
-                  imageUrl:
-                      article["image"],
+                      title:
+                          article["title"],
 
-                  articleUrl:
-                      article["url"],
+                      summary:
+                          article["summary"],
+
+                      imageUrl:
+                          article["image"],
+
+                      articleUrl:
+                          article["url"],
+                    ),
+
+                    Positioned(
+
+                      top: 20,
+                      right: 20,
+
+                      child: IconButton(
+
+                        onPressed: () {
+
+                          removeBookmark(
+                            article,
+                          );
+                        },
+
+                        icon: const Icon(
+                          Icons.delete,
+                          color: Colors.red,
+                          size: 30,
+                        ),
+                      ),
+                    )
+                  ],
                 );
               },
             ),
