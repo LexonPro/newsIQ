@@ -15,10 +15,29 @@ class _HomeScreenState extends State<HomeScreen> {
 
   late Future<List<dynamic>> newsFuture;
 
+  String selectedCategory = "technology";
+
+  final List<String> categories = [
+    "technology",
+    "sports",
+    "business",
+    "health",
+    "science",
+    "entertainment",
+  ];
+
   @override
   void initState() {
     super.initState();
-    newsFuture = NewsService.fetchNews();
+
+    loadNews();
+  }
+
+  void loadNews() {
+
+    newsFuture = NewsService.fetchNews(
+      category: selectedCategory,
+    );
   }
 
   @override
@@ -33,52 +52,138 @@ class _HomeScreenState extends State<HomeScreen> {
         backgroundColor: Colors.black,
       ),
 
-      body: FutureBuilder<List<dynamic>>(
+      body: Column(
 
-        future: newsFuture,
+        children: [
 
-        builder: (context, snapshot) {
+          SizedBox(
 
-          if (snapshot.connectionState == ConnectionState.waiting) {
+            height: 60,
 
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
-          }
+            child: ListView.builder(
 
-          if (snapshot.hasError) {
+              scrollDirection: Axis.horizontal,
 
-            return Center(
-              child: Text(
-                snapshot.error.toString(),
-                style: const TextStyle(color: Colors.white),
-              ),
-            );
-          }
+              itemCount: categories.length,
 
-          final news = snapshot.data!;
+              itemBuilder: (context, index) {
 
-          return ListView.builder(
+                final category = categories[index];
 
-            itemCount: news.length,
+                final isSelected =
+                    category == selectedCategory;
 
-            itemBuilder: (context, index) {
+                return GestureDetector(
 
-              final article = news[index];
+                  onTap: () {
 
-              return NewsCard(
+                    setState(() {
 
-                title: article["title"] ?? "No Title",
+                      selectedCategory = category;
 
-                summary: article["summary"] ?? "No Summary",
+                      loadNews();
+                    });
+                  },
 
-                imageUrl: article["image"] ?? "",
-		
-		articleUrl: article["url"] ?? "",
-              );
-            },
-          );
-        },
+                  child: Container(
+
+                    margin: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 10,
+                    ),
+
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 10,
+                    ),
+
+                    decoration: BoxDecoration(
+
+                      color: isSelected
+                          ? Colors.red
+                          : Colors.grey[900],
+
+                      borderRadius:
+                          BorderRadius.circular(30),
+                    ),
+
+                    child: Center(
+
+                      child: Text(
+
+                        category.toUpperCase(),
+
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+
+          Expanded(
+
+            child: FutureBuilder<List<dynamic>>(
+
+              future: newsFuture,
+
+              builder: (context, snapshot) {
+
+                if (snapshot.connectionState ==
+                    ConnectionState.waiting) {
+
+                  return const Center(
+                    child: CircularProgressIndicator(),
+                  );
+                }
+
+                if (snapshot.hasError) {
+
+                  return Center(
+                    child: Text(
+                      snapshot.error.toString(),
+                      style: const TextStyle(
+                        color: Colors.white,
+                      ),
+                    ),
+                  );
+                }
+
+                final news = snapshot.data!;
+
+                return ListView.builder(
+
+                  itemCount: news.length,
+
+                  itemBuilder: (context, index) {
+
+                    final article = news[index];
+
+                    return NewsCard(
+
+                      title:
+                          article["title"] ?? "No Title",
+
+                      summary:
+                          article["summary"] ??
+                              "No Summary",
+
+                      imageUrl:
+                          article["image"] ?? "",
+
+                      articleUrl:
+                          article["url"] ?? "",
+                    );
+                  },
+                );
+              },
+            ),
+          )
+        ],
       ),
     );
   }

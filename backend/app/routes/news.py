@@ -6,10 +6,10 @@ from app.utils.config import NEWS_API_KEY
 router = APIRouter()
 
 
-@router.get("/news")
-def get_news():
+@router.get("/news/{category}")
+def get_news(category: str):
 
-    url = f"https://newsapi.org/v2/top-headlines?country=us&apiKey={NEWS_API_KEY}"
+    url = f"https://newsapi.org/v2/top-headlines?country=us&category={category}&apiKey={NEWS_API_KEY}"
 
     response = requests.get(url)
 
@@ -24,11 +24,17 @@ def get_news():
     for article in articles[:10]:
 
         news_list.append({
+
             "title": article.get("title"),
+
             "summary": article.get("description"),
+
             "priority": priority,
+
             "image": article.get("urlToImage"),
+
             "source": article.get("source", {}).get("name"),
+
             "url": article.get("url")
         })
 
