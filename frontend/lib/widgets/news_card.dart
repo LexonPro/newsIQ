@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../screens/detail_screen.dart';
+import '../services/bookmark_service.dart';
 
 class NewsCard extends StatelessWidget {
 
@@ -71,7 +72,11 @@ class NewsCard extends StatelessWidget {
                 width: double.infinity,
                 fit: BoxFit.cover,
 
-                errorBuilder: (context, error, stackTrace) {
+                errorBuilder: (
+                  context,
+                  error,
+                  stackTrace,
+                ) {
 
                   return Container(
 
@@ -96,7 +101,8 @@ class NewsCard extends StatelessWidget {
 
               child: Column(
 
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment:
+                    CrossAxisAlignment.start,
 
                 children: [
 
@@ -127,35 +133,76 @@ class NewsCard extends StatelessWidget {
 
                   Row(
 
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    mainAxisAlignment:
+                        MainAxisAlignment.spaceBetween,
 
                     children: [
 
                       Container(
 
-                        padding: const EdgeInsets.symmetric(
+                        padding:
+                            const EdgeInsets.symmetric(
                           horizontal: 12,
                           vertical: 6,
                         ),
 
                         decoration: BoxDecoration(
                           color: Colors.red,
-                          borderRadius: BorderRadius.circular(20),
+                          borderRadius:
+                              BorderRadius.circular(20),
                         ),
 
                         child: const Text(
                           "TOP NEWS",
                           style: TextStyle(
                             color: Colors.white,
-                            fontWeight: FontWeight.bold,
+                            fontWeight:
+                                FontWeight.bold,
                           ),
                         ),
                       ),
 
-                      const Icon(
-                        Icons.arrow_forward,
-                        color: Colors.white,
-                      ),
+                      Row(
+
+                        children: [
+
+                          IconButton(
+
+                            onPressed: () async {
+
+                              await BookmarkService
+                                  .saveBookmark({
+
+                                "title": title,
+                                "summary": summary,
+                                "image": imageUrl,
+                                "url": articleUrl,
+                              });
+
+                              ScaffoldMessenger.of(
+                                      context)
+                                  .showSnackBar(
+
+                                const SnackBar(
+                                  content: Text(
+                                    "Bookmark Saved",
+                                  ),
+                                ),
+                              );
+                            },
+
+                            icon: const Icon(
+                              Icons.bookmark,
+                              color: Colors.white,
+                            ),
+                          ),
+
+                          const Icon(
+                            Icons.arrow_forward,
+                            color: Colors.white,
+                          ),
+                        ],
+                      )
                     ],
                   )
                 ],

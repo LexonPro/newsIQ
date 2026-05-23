@@ -155,30 +155,42 @@ class _HomeScreenState extends State<HomeScreen> {
 
                 final news = snapshot.data!;
 
-                return ListView.builder(
+                return RefreshIndicator(
 
-                  itemCount: news.length,
+                  onRefresh: () async {
 
-                  itemBuilder: (context, index) {
+                    setState(() {
 
-                    final article = news[index];
-
-                    return NewsCard(
-
-                      title:
-                          article["title"] ?? "No Title",
-
-                      summary:
-                          article["summary"] ??
-                              "No Summary",
-
-                      imageUrl:
-                          article["image"] ?? "",
-
-                      articleUrl:
-                          article["url"] ?? "",
-                    );
+                      loadNews();
+                    });
                   },
+
+                  child: ListView.builder(
+
+                    itemCount: news.length,
+
+                    itemBuilder: (context, index) {
+
+                      final article = news[index];
+
+                      return NewsCard(
+
+                        title:
+                            article["title"] ??
+                                "No Title",
+
+                        summary:
+                            article["summary"] ??
+                                "No Summary",
+
+                        imageUrl:
+                            article["image"] ?? "",
+
+                        articleUrl:
+                            article["url"] ?? "",
+                      );
+                    },
+                  ),
                 );
               },
             ),
