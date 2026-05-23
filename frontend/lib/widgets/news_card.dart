@@ -1,142 +1,168 @@
 import 'package:flutter/material.dart';
 
+import '../screens/detail_screen.dart';
+
 class NewsCard extends StatelessWidget {
 
   final String title;
   final String summary;
   final String imageUrl;
+  final String articleUrl;
 
   const NewsCard({
     super.key,
     required this.title,
     required this.summary,
     required this.imageUrl,
+    required this.articleUrl,
   });
 
   @override
   Widget build(BuildContext context) {
 
-    return Container(
+    return GestureDetector(
 
-      margin: const EdgeInsets.all(12),
+      onTap: () {
 
-      decoration: BoxDecoration(
-        color: Colors.grey[900],
-        borderRadius: BorderRadius.circular(20),
-      ),
+        Navigator.push(
 
-      child: Column(
+          context,
 
-        crossAxisAlignment: CrossAxisAlignment.start,
+          MaterialPageRoute(
 
-        children: [
+            builder: (context) => DetailScreen(
 
-          ClipRRect(
-
-            borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(20),
-              topRight: Radius.circular(20),
-            ),
-
-            child: Image.network(
-
-              imageUrl,
-
-              height: 220,
-              width: double.infinity,
-              fit: BoxFit.cover,
-
-              errorBuilder: (context, error, stackTrace) {
-
-                return Container(
-
-                  height: 220,
-                  color: Colors.grey,
-
-                  child: const Center(
-                    child: Icon(
-                      Icons.image,
-                      size: 50,
-                      color: Colors.white,
-                    ),
-                  ),
-                );
-              },
+              title: title,
+              summary: summary,
+              imageUrl: imageUrl,
+              articleUrl: articleUrl,
             ),
           ),
+        );
+      },
 
-          Padding(
+      child: Container(
 
-            padding: const EdgeInsets.all(16),
+        margin: const EdgeInsets.all(12),
 
-            child: Column(
+        decoration: BoxDecoration(
+          color: Colors.grey[900],
+          borderRadius: BorderRadius.circular(20),
+        ),
 
-              crossAxisAlignment: CrossAxisAlignment.start,
+        child: Column(
 
-              children: [
+          crossAxisAlignment: CrossAxisAlignment.start,
 
-                Text(
+          children: [
 
-                  title,
+            ClipRRect(
 
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(20),
+                topRight: Radius.circular(20),
+              ),
 
-                const SizedBox(height: 12),
+              child: Image.network(
 
-                Text(
+                imageUrl,
 
-                  summary,
+                height: 220,
+                width: double.infinity,
+                fit: BoxFit.cover,
 
-                  style: const TextStyle(
-                    color: Colors.white70,
-                    fontSize: 15,
-                  ),
-                ),
+                errorBuilder: (context, error, stackTrace) {
 
-                const SizedBox(height: 15),
+                  return Container(
 
-                Row(
+                    height: 220,
+                    color: Colors.grey,
 
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-
-                  children: [
-
-                    Container(
-
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 6,
+                    child: const Center(
+                      child: Icon(
+                        Icons.image,
+                        size: 50,
+                        color: Colors.white,
                       ),
+                    ),
+                  );
+                },
+              ),
+            ),
 
-                      decoration: BoxDecoration(
-                        color: Colors.red,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
+            Padding(
 
-                      child: const Text(
-                        "TOP NEWS",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
+              padding: const EdgeInsets.all(16),
+
+              child: Column(
+
+                crossAxisAlignment: CrossAxisAlignment.start,
+
+                children: [
+
+                  Text(
+
+                    title,
+
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  Text(
+
+                    summary,
+
+                    style: const TextStyle(
+                      color: Colors.white70,
+                      fontSize: 15,
+                    ),
+                  ),
+
+                  const SizedBox(height: 15),
+
+                  Row(
+
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+
+                    children: [
+
+                      Container(
+
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+
+                        decoration: BoxDecoration(
+                          color: Colors.red,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+
+                        child: const Text(
+                          "TOP NEWS",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
-                    ),
 
-                    const Icon(
-                      Icons.arrow_forward,
-                      color: Colors.white,
-                    ),
-                  ],
-                )
-              ],
-            ),
-          )
-        ],
+                      const Icon(
+                        Icons.arrow_forward,
+                        color: Colors.white,
+                      ),
+                    ],
+                  )
+                ],
+              ),
+            )
+          ],
+        ),
       ),
     );
   }
