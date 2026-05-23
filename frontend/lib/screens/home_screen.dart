@@ -71,6 +71,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 title: article["title"] ?? "No Title",
 
                 summary: article["summary"] ?? "No Summary",
+
+                imageUrl: article["image"] ?? "",
               );
             },
           );
