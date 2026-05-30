@@ -27,41 +27,53 @@ class NewsService {
     }
   }
 
-  /// Sends a request with self-healing fallback if the main backend URL fails.
-  static Future<http.Response> _safeGet(String path) async {
+  /// Sends a unified request with full self-healing fallback support for both GET and POST.
+  static Future<http.Response> _sendRequest(String method, String path, {Map<String, dynamic>? body}) async {
     await _initializeUrl();
+    final headers = {"Content-Type": "application/json"};
+    final encodedBody = body != null ? jsonEncode(body) : null;
+
     try {
-      // Attempt connection with a short 3-second timeout
-      final response = await http.get(Uri.parse("$activeUrl$path")).timeout(const Duration(seconds: 3));
-      return response;
+      final uri = Uri.parse("$activeUrl$path");
+      if (method == "POST") {
+        return await http.post(uri, headers: headers, body: encodedBody).timeout(const Duration(seconds: 4));
+      } else {
+        return await http.get(uri).timeout(const Duration(seconds: 4));
+      }
     } catch (e) {
-      debugPrint("Connection to $activeUrl failed: $e. Initiating self-healing network scan...");
-      
-      // Candidate list of all potential backend environments
+      debugPrint("HTTP request to $activeUrl$path failed: $e. Scanning candidates...");
+
+      // Candidates list including USB port-forwards, Wi-Fi IP, and default fallback configurations
       final List<String> candidates = [
         "http://127.0.0.1:8000",
         "http://localhost:8000",
+        "http://10.37.146.192:8000",
         if (defaultTargetPlatform == TargetPlatform.android) "http://10.0.2.2:8000",
         defaultUrl,
       ];
 
       for (final candidate in candidates) {
-        if (candidate == activeUrl) continue; // Skip the one we already know is failing
+        if (candidate == activeUrl) continue; // Skip activeUrl since it just failed
         try {
           debugPrint("Scanning backend candidate: $candidate...");
-          final response = await http.get(Uri.parse("$candidate$path")).timeout(const Duration(seconds: 2));
-          
-          // Connection succeeded! Update activeUrl and cache it for future launches
+          final candidateUri = Uri.parse("$candidate$path");
+          http.Response response;
+          if (method == "POST") {
+            response = await http.post(candidateUri, headers: headers, body: encodedBody).timeout(const Duration(seconds: 2));
+          } else {
+            response = await http.get(candidateUri).timeout(const Duration(seconds: 2));
+          }
+
+          // Handshake succeeded! Update active URL and save it to storage
           activeUrl = candidate;
           final prefs = await SharedPreferences.getInstance();
           await prefs.setString("backend_url", candidate);
-          debugPrint("Successfully healed network connection! Active URL: $candidate");
+          debugPrint("Successfully healed connection! Saved URL: $candidate");
           return response;
         } catch (_) {
-          // Continue scanning remaining candidates
+          // Keep trying remaining candidates
         }
       }
-      // If all candidates failed, rethrow the original error
       rethrow;
     }
   }
@@ -69,48 +81,32 @@ class NewsService {
   static Future<List<dynamic>> fetchNews({
     String category = "technology",
   }) async {
-    final response = await _safeGet("/news/$category");
+    final response = await _sendRequest("GET", "/news/$category");
     return jsonDecode(response.body);
   }
 
   static Future<List<dynamic>> searchNews(
     String query,
   ) async {
-    final response = await _safeGet("/search/$query");
+    final response = await _sendRequest("GET", "/search/$query");
     return jsonDecode(response.body);
-  }
-
-  /// Sends a safe POST request to the backend.
-  static Future<http.Response> _safePost(String path, Map<String, dynamic> body) async {
-    await _initializeUrl();
-    try {
-      final response = await http.post(
-        Uri.parse("$activeUrl$path"),
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode(body),
-      ).timeout(const Duration(seconds: 10));
-      return response;
-    } catch (e) {
-      debugPrint("Post request failed to $activeUrl$path: $e");
-      rethrow;
-    }
   }
 
   /// Fetches a 3-bullet TL;DR summary from Gemini.
   static Future<String> getTLDR(String title, String content) async {
-    final res = await _safePost("/news/tldr", {"title": title, "content": content});
+    final res = await _sendRequest("POST", "/news/tldr", body: {"title": title, "content": content});
     return jsonDecode(res.body)["response"];
   }
 
   /// Fetches a child-friendly explanation from Gemini.
   static Future<String> getELI5(String title, String content) async {
-    final res = await _safePost("/news/eli5", {"title": title, "content": content});
+    final res = await _sendRequest("POST", "/news/eli5", body: {"title": title, "content": content});
     return jsonDecode(res.body)["response"];
   }
 
   /// Fetches Pros/Cons impact analysis from Gemini.
   static Future<String> getImpact(String title, String content) async {
-    final res = await _safePost("/news/impact", {"title": title, "content": content});
+    final res = await _sendRequest("POST", "/news/impact", body: {"title": title, "content": content});
     return jsonDecode(res.body)["response"];
   }
 
@@ -121,7 +117,7 @@ class NewsService {
     List<Map<String, String>> history,
     String message,
   ) async {
-    final res = await _safePost("/news/chat", {
+    final res = await _sendRequest("POST", "/news/chat", body: {
       "title": title,
       "summary": summary,
       "history": history,
