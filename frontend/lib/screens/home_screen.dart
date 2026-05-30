@@ -49,7 +49,13 @@ class _HomeScreenState extends State<HomeScreen> {
 
       appBar: AppBar(
 
-        title: const Text("AI News"),
+        title: const Text(
+          "newsIQ",
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            letterSpacing: 0.5,
+          ),
+        ),
 
         backgroundColor: Colors.black,
 

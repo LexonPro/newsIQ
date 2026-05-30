@@ -18,7 +18,7 @@ class MyApp extends StatelessWidget {
 
       debugShowCheckedModeBanner: false,
 
-      title: 'AI News',
+      title: 'newsIQ',
 
       theme: ThemeData.dark(),
 
