@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/news_service.dart';
+import '../main.dart'; // Access global themeNotifier
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -70,6 +71,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
     } catch (_) {}
   }
 
+  /// Toggle and persist active system themeMode
+  Future<void> updateThemeMode(ThemeMode mode) async {
+    themeNotifier.value = mode;
+    setState(() {});
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool("theme_light", mode == ThemeMode.light);
+    } catch (_) {}
+  }
+
   /// Clears the cached dynamic backend URL
   Future<void> clearNetworkCache() async {
     try {
@@ -123,14 +134,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isDark ? Colors.white : const Color(0xFF1E293B);
+    final secondaryTextColor = isDark ? Colors.grey[500]! : const Color(0xFF64748B);
+    final cardBorder = isDark ? Colors.white12 : Colors.black.withOpacity(0.06);
+    final cardDivider = isDark ? Colors.white10 : Colors.black.withOpacity(0.08);
+
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: isDark ? Colors.black : const Color(0xFFF7F8FA),
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           "newsIQ Control Center",
-          style: TextStyle(fontWeight: FontWeight.bold),
+          style: TextStyle(fontWeight: FontWeight.bold, color: textColor),
         ),
-        backgroundColor: Colors.black,
+        backgroundColor: isDark ? Colors.black : const Color(0xFFF7F8FA),
         elevation: 0,
       ),
       body: SingleChildScrollView(
@@ -148,7 +165,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   end: Alignment.bottomRight,
                 ),
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: Colors.white10),
+                border: Border.all(color: cardBorder),
               ),
               child: Row(
                 children: [
@@ -170,19 +187,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
+                      Text(
                         "Welcome to newsIQ",
-                        style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+                        style: TextStyle(color: textColor, fontSize: 20, fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         "Your Personalized AI Newsfeed",
-                        style: TextStyle(color: Colors.grey[500], fontSize: 13),
+                        style: TextStyle(color: secondaryTextColor, fontSize: 13),
                       ),
                     ],
                   )
                 ],
               ),
+            ),
+            const SizedBox(height: 25),
+
+            // 🎨 SECTION: SYSTEM THEME DESIGN
+            _buildSectionHeader("🎨 SYSTEM THEME DESIGN"),
+            const SizedBox(height: 12),
+            _buildSettingCard(
+              child: _buildThemeToggleRow(textColor, secondaryTextColor, isDark),
             ),
             const SizedBox(height: 25),
 
@@ -204,7 +229,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       }
                     },
                   ),
-                  const Divider(color: Colors.white10, height: 25),
+                  Divider(color: cardDivider, height: 25),
                   _buildDropdownRow(
                     label: "Reader Density",
                     description: "Feed layout sizing & cards spacing",
@@ -236,9 +261,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     selected: isFav,
                     selectedColor: Colors.red,
                     checkmarkColor: Colors.white,
-                    backgroundColor: Colors.grey[900],
+                    backgroundColor: isDark ? const Color(0xFF0F172A) : const Color(0xFFE2E8F0),
                     labelStyle: TextStyle(
-                      color: isFav ? Colors.white : Colors.white70,
+                      color: isFav ? Colors.white : (isDark ? Colors.white70 : const Color(0xFF475569)),
                       fontWeight: FontWeight.bold,
                       fontSize: 12,
                     ),
@@ -262,14 +287,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
+                          Text(
                             "Active API Server IP",
-                            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15),
+                            style: TextStyle(color: textColor, fontWeight: FontWeight.bold, fontSize: 15),
                           ),
                           const SizedBox(height: 4),
                           Text(
                             "Current active dynamic tunnel address",
-                            style: TextStyle(color: Colors.grey[500], fontSize: 12),
+                            style: TextStyle(color: secondaryTextColor, fontSize: 12),
                           ),
                         ],
                       ),
@@ -290,13 +315,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       Expanded(
                         child: TextField(
                           controller: urlController,
-                          style: const TextStyle(color: Colors.white, fontSize: 14),
+                          style: TextStyle(color: textColor, fontSize: 14),
                           decoration: InputDecoration(
-                            fillColor: Colors.black,
+                            fillColor: isDark ? Colors.black : const Color(0xFFF1F5F9),
                             filled: true,
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(10),
-                              borderSide: const BorderSide(color: Colors.white12),
+                              borderSide: BorderSide(color: cardBorder),
                             ),
                             contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                           ),
@@ -309,11 +334,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           backgroundColor: Colors.red,
                           padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
                         ),
-                        child: const Text("Save"),
+                        child: const Text("Save", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                       ),
                     ],
                   ),
-                  const Divider(color: Colors.white10, height: 30),
+                  Divider(color: cardDivider, height: 30),
                   SizedBox(
                     width: double.infinity,
                     child: OutlinedButton.icon(
@@ -336,9 +361,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
             Center(
               child: Column(
                 children: [
-                  Text("newsIQ for Mobile/Desktop", style: TextStyle(color: Colors.grey[600], fontSize: 13, fontWeight: FontWeight.bold)),
+                  Text("newsIQ for Mobile/Desktop", style: TextStyle(color: isDark ? Colors.grey[600] : const Color(0xFF94A3B8), fontSize: 13, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 4),
-                  Text("v1.0.0 • Connected to Gemini API", style: TextStyle(color: Colors.grey[750], fontSize: 11)),
+                  Text("v1.0.0 • Connected to Gemini API", style: TextStyle(color: isDark ? Colors.grey[800] : const Color(0xFFCBD5E1), fontSize: 11)),
                 ],
               ),
             ),
@@ -362,15 +387,93 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildSettingCard({required Widget child}) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.grey[900],
+        color: isDark ? Colors.grey[900] : Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white12),
+        border: Border.all(color: isDark ? Colors.white12 : Colors.black.withOpacity(0.06)),
+        boxShadow: isDark ? null : [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          )
+        ],
       ),
       child: child,
+    );
+  }
+
+  Widget _buildThemeToggleRow(Color textColor, Color secondaryTextColor, bool isDark) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "Display Theme",
+                style: TextStyle(color: textColor, fontWeight: FontWeight.bold, fontSize: 15),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                isDark ? "Comfortable dark look (Default)" : "Crisp bright look for daylight reading",
+                style: TextStyle(color: secondaryTextColor, fontSize: 12),
+              ),
+            ],
+          ),
+        ),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+          decoration: BoxDecoration(
+            color: isDark ? Colors.black : const Color(0xFFF1F5F9),
+            borderRadius: BorderRadius.circular(30),
+            border: Border.all(color: isDark ? Colors.white12 : Colors.black.withOpacity(0.06)),
+          ),
+          child: Row(
+            children: [
+              GestureDetector(
+                onTap: () => updateThemeMode(ThemeMode.dark),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: isDark ? Colors.red : Colors.transparent,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.dark_mode, size: 16, color: isDark ? Colors.white : Colors.black54),
+                      const SizedBox(width: 4),
+                      Text("Dark", style: TextStyle(color: isDark ? Colors.white : Colors.black54, fontWeight: FontWeight.bold, fontSize: 12)),
+                    ],
+                  ),
+                ),
+              ),
+              GestureDetector(
+                onTap: () => updateThemeMode(ThemeMode.light),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: !isDark ? Colors.red : Colors.transparent,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.light_mode, size: 16, color: !isDark ? Colors.white : Colors.white70),
+                      const SizedBox(width: 4),
+                      Text("Light", style: TextStyle(color: !isDark ? Colors.white : Colors.white70, fontWeight: FontWeight.bold, fontSize: 12)),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
@@ -381,6 +484,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
     required List<String> items,
     required ValueChanged<String?> onChanged,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isDark ? Colors.white : const Color(0xFF1E293B);
+    final secondaryTextColor = isDark ? Colors.grey[500] : const Color(0xFF64748B);
+    
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -390,12 +497,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
             children: [
               Text(
                 label,
-                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15),
+                style: TextStyle(color: textColor, fontWeight: FontWeight.bold, fontSize: 15),
               ),
               const SizedBox(height: 4),
               Text(
                 description,
-                style: TextStyle(color: Colors.grey[500], fontSize: 12),
+                style: TextStyle(color: secondaryTextColor, fontSize: 12),
               ),
             ],
           ),
@@ -403,16 +510,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
           decoration: BoxDecoration(
-            color: Colors.black,
+            color: isDark ? Colors.black : const Color(0xFFF1F5F9),
             borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: Colors.white12),
+            border: Border.all(color: isDark ? Colors.white12 : Colors.black.withOpacity(0.06)),
           ),
           child: DropdownButtonHideUnderline(
             child: DropdownButton<String>(
               value: value,
-              dropdownColor: Colors.black,
-              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
-              icon: const Icon(Icons.arrow_drop_down, color: Colors.white70),
+              dropdownColor: isDark ? Colors.black : Colors.white,
+              style: TextStyle(color: textColor, fontWeight: FontWeight.bold, fontSize: 13),
+              icon: Icon(Icons.arrow_drop_down, color: isDark ? Colors.white70 : Colors.black54),
               items: items.map((item) {
                 return DropdownMenuItem<String>(
                   value: item,

@@ -123,6 +123,8 @@ class _DetailScreenState extends State<DetailScreen> {
 
   /// Opens the gorgeous glassmorphic bottom sheet for Live Q&A chat
   void openChatSheet() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -130,15 +132,21 @@ class _DetailScreenState extends State<DetailScreen> {
       builder: (BuildContext context) {
         return StatefulBuilder(
           builder: (BuildContext context, StateSetter modalSetState) {
+            final textColor = isDark ? Colors.white : const Color(0xFF1E293B);
+            final secondaryTextColor = isDark ? Colors.grey[400] : const Color(0xFF64748B);
+            final sheetBg = isDark ? Colors.grey[950]! : Colors.white;
+            final borderThemeColor = isDark ? Colors.white10 : Colors.black.withOpacity(0.06);
+            final handleColor = isDark ? Colors.white24 : Colors.black26;
+            
             return Container(
               height: MediaQuery.of(context).size.height * 0.75,
               decoration: BoxDecoration(
-                color: Colors.grey[950],
+                color: sheetBg,
                 borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(30),
                   topRight: Radius.circular(30),
                 ),
-                border: Border.all(color: Colors.white10, width: 1.5),
+                border: Border.all(color: borderThemeColor, width: 1.5),
               ),
               child: Column(
                 children: [
@@ -148,7 +156,7 @@ class _DetailScreenState extends State<DetailScreen> {
                     height: 5,
                     width: 50,
                     decoration: BoxDecoration(
-                      color: Colors.white24,
+                      color: handleColor,
                       borderRadius: BorderRadius.circular(10),
                     ),
                   ),
@@ -168,29 +176,29 @@ class _DetailScreenState extends State<DetailScreen> {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
+                            Text(
                               "Chat with newsIQ AI",
                               style: TextStyle(
-                                color: Colors.white,
+                                color: textColor,
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
                             Text(
                               "Ask any questions about this article",
-                              style: TextStyle(color: Colors.grey[400], fontSize: 13),
+                              style: TextStyle(color: secondaryTextColor, fontSize: 13),
                             ),
                           ],
                         ),
                         const Spacer(),
                         IconButton(
-                          icon: const Icon(Icons.close, color: Colors.white70),
+                          icon: Icon(Icons.close, color: isDark ? Colors.white70 : Colors.black54),
                           onPressed: () => Navigator.pop(context),
                         )
                       ],
                     ),
                   ),
-                  const Divider(color: Colors.white10, height: 1),
+                  Divider(color: borderThemeColor, height: 1),
 
                   // Chat Message List
                   Expanded(
@@ -201,17 +209,17 @@ class _DetailScreenState extends State<DetailScreen> {
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Icon(Icons.auto_awesome, color: Colors.grey[800], size: 60),
+                                  Icon(Icons.auto_awesome, color: isDark ? Colors.grey[800] : Colors.grey[300], size: 60),
                                   const SizedBox(height: 15),
                                   Text(
                                     "No messages yet",
-                                    style: TextStyle(color: Colors.grey[400], fontSize: 16, fontWeight: FontWeight.bold),
+                                    style: TextStyle(color: textColor, fontSize: 16, fontWeight: FontWeight.bold),
                                   ),
                                   const SizedBox(height: 8),
                                   Text(
                                     "Ask things like 'Who is mentioned?' or 'What are the main consequences?'",
                                     textAlign: TextAlign.center,
-                                    style: TextStyle(color: Colors.grey[600], fontSize: 13),
+                                    style: TextStyle(color: secondaryTextColor, fontSize: 13),
                                   ),
                                 ],
                               ),
@@ -232,18 +240,21 @@ class _DetailScreenState extends State<DetailScreen> {
                                     maxWidth: MediaQuery.of(context).size.width * 0.75,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: isUser ? Colors.red : Colors.grey[900],
+                                    color: isUser ? Colors.red : (isDark ? Colors.grey[900] : const Color(0xFFF1F5F9)),
                                     borderRadius: BorderRadius.only(
                                       topLeft: const Radius.circular(20),
                                       topRight: const Radius.circular(20),
                                       bottomLeft: Radius.circular(isUser ? 20 : 0),
                                       bottomRight: Radius.circular(isUser ? 0 : 20),
                                     ),
-                                    border: isUser ? null : Border.all(color: Colors.white10),
+                                    border: isUser ? null : Border.all(color: borderThemeColor),
                                   ),
                                   child: Text(
                                     msg["content"] ?? "",
-                                    style: const TextStyle(color: Colors.white, fontSize: 15),
+                                    style: TextStyle(
+                                      color: isUser ? Colors.white : (isDark ? Colors.white : const Color(0xFF1E293B)),
+                                      fontSize: 15,
+                                    ),
                                   ),
                                 ),
                               );
@@ -265,7 +276,7 @@ class _DetailScreenState extends State<DetailScreen> {
                               child: CircularProgressIndicator(strokeWidth: 2, color: Colors.red),
                             ),
                             const SizedBox(width: 10),
-                            Text("newsIQ is reading...", style: TextStyle(color: Colors.grey[500], fontSize: 13)),
+                            Text("newsIQ is reading...", style: TextStyle(color: secondaryTextColor, fontSize: 13)),
                           ],
                         ),
                       ),
@@ -284,15 +295,15 @@ class _DetailScreenState extends State<DetailScreen> {
                         Expanded(
                           child: TextField(
                             controller: chatController,
-                            style: const TextStyle(color: Colors.white),
+                            style: TextStyle(color: textColor),
                             decoration: InputDecoration(
                               hintText: "Type a question about the article...",
-                              hintStyle: const TextStyle(color: Colors.white30),
-                              fillColor: Colors.grey[900],
+                              hintStyle: TextStyle(color: isDark ? Colors.white30 : const Color(0xFF94A3B8)),
+                              fillColor: isDark ? Colors.grey[900] : const Color(0xFFF1F5F9),
                               filled: true,
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(30),
-                                borderSide: BorderSide.none,
+                                borderSide: isDark ? BorderSide.none : BorderSide(color: borderThemeColor),
                               ),
                               contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
                             ),
@@ -324,15 +335,22 @@ class _DetailScreenState extends State<DetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isDark ? Colors.white : const Color(0xFF1E293B);
+    final secondaryTextColor = isDark ? Colors.white70 : const Color(0xFF475569);
+    final scaffoldBg = isDark ? Colors.black : const Color(0xFFF7F8FA);
+    final cardBorder = isDark ? Colors.white10 : Colors.black.withOpacity(0.08);
+
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: scaffoldBg,
       appBar: AppBar(
-        backgroundColor: Colors.black,
-        title: const Text(
+        backgroundColor: scaffoldBg,
+        title: Text(
           "newsIQ Detail",
-          style: TextStyle(fontWeight: FontWeight.bold),
+          style: TextStyle(fontWeight: FontWeight.bold, color: textColor),
         ),
         elevation: 0,
+        iconTheme: IconThemeData(color: textColor),
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -347,12 +365,12 @@ class _DetailScreenState extends State<DetailScreen> {
               errorBuilder: (context, error, stackTrace) {
                 return Container(
                   height: 250,
-                  color: Colors.grey[900],
-                  child: const Center(
+                  color: isDark ? Colors.grey[900] : const Color(0xFFE2E8F0),
+                  child: Center(
                     child: Icon(
                       Icons.image,
                       size: 50,
-                      color: Colors.white24,
+                      color: isDark ? Colors.white24 : Colors.black26,
                     ),
                   ),
                 );
@@ -367,8 +385,8 @@ class _DetailScreenState extends State<DetailScreen> {
                   // Title
                   Text(
                     widget.title,
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: textColor,
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
                     ),
@@ -392,7 +410,7 @@ class _DetailScreenState extends State<DetailScreen> {
                       width: double.infinity,
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: Colors.red.withOpacity(0.03),
+                        color: Colors.red.withOpacity(isDark ? 0.03 : 0.04),
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(color: Colors.red.withOpacity(0.2), width: 1.5),
                       ),
@@ -428,8 +446,8 @@ class _DetailScreenState extends State<DetailScreen> {
                           else
                             Text(
                               aiResultText ?? "",
-                              style: const TextStyle(
-                                color: Colors.white70,
+                              style: TextStyle(
+                                color: secondaryTextColor,
                                 fontSize: 15,
                                 height: 1.5,
                               ),
@@ -440,14 +458,14 @@ class _DetailScreenState extends State<DetailScreen> {
                   ],
 
                   const SizedBox(height: 20),
-                  const Divider(color: Colors.white10),
+                  Divider(color: cardBorder),
                   const SizedBox(height: 15),
 
                   // Original Summary
                   Text(
                     widget.summary,
-                    style: const TextStyle(
-                      color: Colors.white70,
+                    style: TextStyle(
+                      color: secondaryTextColor,
                       fontSize: 16,
                       height: 1.6,
                     ),
@@ -469,7 +487,7 @@ class _DetailScreenState extends State<DetailScreen> {
                       ),
                       child: const Text(
                         "Read Full Original Article",
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
                       ),
                     ),
                   ),
@@ -489,22 +507,30 @@ class _DetailScreenState extends State<DetailScreen> {
   }
 
   Widget _buildAiChip(String action, String label) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final isSelected = activeAction == action;
     return GestureDetector(
       onTap: () => runAiAction(action),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
-          color: isSelected ? Colors.red : Colors.grey[900],
+          color: isSelected ? Colors.red : (isDark ? Colors.grey[900] : Colors.white),
           borderRadius: BorderRadius.circular(30),
           border: Border.all(
-            color: isSelected ? Colors.red : Colors.white12,
+            color: isSelected ? Colors.red : (isDark ? Colors.white12 : Colors.black.withOpacity(0.08)),
           ),
+          boxShadow: (isSelected || isDark) ? null : [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.03),
+              blurRadius: 6,
+              offset: const Offset(0, 2),
+            )
+          ],
         ),
         child: Text(
           label,
           style: TextStyle(
-            color: isSelected ? Colors.white : Colors.white70,
+            color: isSelected ? Colors.white : (isDark ? Colors.white70 : const Color(0xFF475569)),
             fontSize: 13,
             fontWeight: FontWeight.bold,
           ),

@@ -20,6 +20,11 @@ class NewsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isDark ? Colors.white : const Color(0xFF1E293B);
+    final secondaryTextColor = isDark ? Colors.white70 : const Color(0xFF64748B);
+    final containerColor = isDark ? Colors.grey[900] : Colors.white;
+    final borderColor = isDark ? Colors.white10 : Colors.black.withOpacity(0.05);
 
     return GestureDetector(
 
@@ -47,8 +52,16 @@ class NewsCard extends StatelessWidget {
         margin: const EdgeInsets.all(12),
 
         decoration: BoxDecoration(
-          color: Colors.grey[900],
+          color: containerColor,
           borderRadius: BorderRadius.circular(20),
+          border: isDark ? null : Border.all(color: borderColor),
+          boxShadow: isDark ? null : [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            )
+          ],
         ),
 
         child: Column(
@@ -107,11 +120,9 @@ class NewsCard extends StatelessWidget {
                 children: [
 
                   Text(
-
                     title,
-
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: textColor,
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
                     ),
@@ -120,11 +131,9 @@ class NewsCard extends StatelessWidget {
                   const SizedBox(height: 12),
 
                   Text(
-
                     summary,
-
-                    style: const TextStyle(
-                      color: Colors.white70,
+                    style: TextStyle(
+                      color: secondaryTextColor,
                       fontSize: 15,
                     ),
                   ),
@@ -191,15 +200,15 @@ class NewsCard extends StatelessWidget {
                               );
                             },
 
-                            icon: const Icon(
+                            icon: Icon(
                               Icons.bookmark,
-                              color: Colors.white,
+                              color: isDark ? Colors.white : const Color(0xFF1E293B),
                             ),
                           ),
 
-                          const Icon(
+                          Icon(
                             Icons.arrow_forward,
-                            color: Colors.white,
+                            color: isDark ? Colors.white : const Color(0xFF1E293B),
                           ),
                         ],
                       )

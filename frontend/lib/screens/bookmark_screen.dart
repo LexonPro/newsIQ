@@ -57,27 +57,26 @@ class _BookmarkScreenState
 
   @override
   Widget build(BuildContext context) {
-
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-
-      backgroundColor: Colors.black,
-
+      backgroundColor: isDark ? Colors.black : const Color(0xFFF7F8FA),
       appBar: AppBar(
-        title: const Text("Bookmarks"),
-        backgroundColor: Colors.black,
+        title: Text(
+          "Bookmarks",
+          style: TextStyle(color: isDark ? Colors.white : const Color(0xFF1E293B), fontWeight: FontWeight.bold),
+        ),
+        backgroundColor: isDark ? Colors.black : const Color(0xFFF7F8FA),
+        iconTheme: IconThemeData(color: isDark ? Colors.white : const Color(0xFF1E293B)),
+        elevation: 0,
       ),
-
       body: bookmarks.isEmpty
-
-          ? const Center(
-
+          ? Center(
               child: Text(
-
                 "No Bookmarks",
-
                 style: TextStyle(
-                  color: Colors.white,
+                  color: isDark ? Colors.white : const Color(0xFF64748B),
                   fontSize: 22,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
             )

@@ -44,55 +44,44 @@ class _SearchScreenState extends State<SearchScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isDark ? Colors.white : const Color(0xFF1E293B);
 
     return Scaffold(
-
-      backgroundColor: Colors.black,
-
+      backgroundColor: isDark ? Colors.black : const Color(0xFFF7F8FA),
       appBar: AppBar(
-        title: const Text("Search News"),
-        backgroundColor: Colors.black,
+        title: Text(
+          "Search News",
+          style: TextStyle(color: textColor, fontWeight: FontWeight.bold),
+        ),
+        backgroundColor: isDark ? Colors.black : const Color(0xFFF7F8FA),
+        iconTheme: IconThemeData(color: isDark ? Colors.white : const Color(0xFF1E293B)),
+        elevation: 0,
       ),
-
       body: Column(
-
         children: [
-
           Padding(
-
             padding: const EdgeInsets.all(12),
-
             child: Row(
-
               children: [
-
                 Expanded(
-
                   child: TextField(
-
                     controller: controller,
-
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: textColor,
                     ),
-
                     decoration: InputDecoration(
-
                       hintText: "Search news...",
-
-                      hintStyle: const TextStyle(
-                        color: Colors.white54,
+                      hintStyle: TextStyle(
+                        color: isDark ? Colors.white54 : const Color(0xFF94A3B8),
                       ),
-
                       filled: true,
-
-                      fillColor: Colors.grey[900],
-
+                      fillColor: isDark ? Colors.grey[900] : Colors.white,
                       border: OutlineInputBorder(
-                        borderRadius:
-                            BorderRadius.circular(15),
-                        borderSide: BorderSide.none,
+                        borderRadius: BorderRadius.circular(15),
+                        borderSide: isDark ? BorderSide.none : BorderSide(color: Colors.black.withOpacity(0.08)),
                       ),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                     ),
                   ),
                 ),

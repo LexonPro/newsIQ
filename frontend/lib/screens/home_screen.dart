@@ -43,23 +43,21 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isDark ? Colors.white : const Color(0xFF1E293B);
 
     return Scaffold(
-
-      backgroundColor: Colors.black,
-
+      backgroundColor: isDark ? Colors.black : const Color(0xFFF7F8FA),
       appBar: AppBar(
-
-        title: const Text(
+        title: Text(
           "newsIQ",
           style: TextStyle(
             fontWeight: FontWeight.bold,
             letterSpacing: 0.5,
+            color: textColor,
           ),
         ),
-
-        backgroundColor: Colors.black,
-
+        backgroundColor: isDark ? Colors.black : const Color(0xFFF7F8FA),
         elevation: 0,
       ),
 
@@ -109,25 +107,17 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
 
                     decoration: BoxDecoration(
-
                       color: isSelected
                           ? Colors.red
-                          : Colors.grey[900],
-
+                          : (isDark ? Colors.grey[900] : const Color(0xFFE2E8F0)),
                       borderRadius:
                           BorderRadius.circular(30),
                     ),
-
                     child: Center(
-
                       child: Text(
-
                         category.toUpperCase(),
-
-                        style: const TextStyle(
-
-                          color: Colors.white,
-
+                        style: TextStyle(
+                          color: isSelected ? Colors.white : (isDark ? Colors.white : const Color(0xFF475569)),
                           fontWeight:
                               FontWeight.bold,
                         ),
@@ -160,14 +150,12 @@ class _HomeScreenState extends State<HomeScreen> {
 
                   return Center(
 
-                    child: Text(
-
-                      snapshot.error.toString(),
-
-                      style: const TextStyle(
-                        color: Colors.white,
+                      child: Text(
+                        snapshot.error.toString(),
+                        style: TextStyle(
+                          color: isDark ? Colors.white : Colors.black87,
+                        ),
                       ),
-                    ),
                   );
                 }
 
@@ -213,12 +201,12 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                         ),
                         const SizedBox(height: 15),
-                        const Padding(
-                          padding: EdgeInsets.only(left: 16, bottom: 10),
+                        Padding(
+                          padding: const EdgeInsets.only(left: 16, bottom: 10),
                           child: Text(
                             "RECOMMENDED FEED",
                             style: TextStyle(
-                              color: Colors.white70,
+                              color: isDark ? Colors.white70 : const Color(0xFF475569),
                               fontWeight: FontWeight.bold,
                               letterSpacing: 1.2,
                               fontSize: 13,
