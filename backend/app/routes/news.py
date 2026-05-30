@@ -41,7 +41,7 @@ class QuickActionRequest(BaseModel):
     content: str
 
 
-async def enrich_article(article, use_ai: bool, default_priority: int):
+async def enrich_article(article, use_ai: bool, default_priority: int, tone: str = "Professional"):
     title = article.get("title") or ""
     description = article.get("description") or ""
     
@@ -49,7 +49,7 @@ async def enrich_article(article, use_ai: bool, default_priority: int):
         text_to_analyze = f"Title: {title}\nDescription: {description}"
         try:
             # Execute Gemini client operations in parallel worker threads to prevent blocking FastAPI
-            summary_task = anyio.to_thread.run_sync(summarize_news, text_to_analyze)
+            summary_task = anyio.to_thread.run_sync(summarize_news, text_to_analyze, tone)
             score_task = anyio.to_thread.run_sync(get_priority_score, text_to_analyze)
             
             summary, score = await asyncio.gather(summary_task, score_task)
@@ -77,10 +77,10 @@ async def enrich_article(article, use_ai: bool, default_priority: int):
 
 
 @router.get("/news/{category}")
-async def get_news(category: str):
+async def get_news(category: str, tone: str = "Professional"):
     # 1. Query local SQLite cache first for fresh articles (max age 1 hour)
     try:
-        cached_articles = get_cached_news(category, max_age_seconds=3600)
+        cached_articles = get_cached_news(category, tone, max_age_seconds=3600)
         if cached_articles and len(cached_articles) >= 5:
             # Successfully loaded fresh cache, return instantly!
             return cached_articles
@@ -100,7 +100,7 @@ async def get_news(category: str):
     for i, article in enumerate(articles[:10]):
         # Run Gemini AI enrichment only on top 5 articles to stay within rate limits and keep it ultra-fast
         use_ai = i < 5
-        tasks.append(enrich_article(article, use_ai, priority))
+        tasks.append(enrich_article(article, use_ai, priority, tone))
         priority -= 10
 
     news_list = await asyncio.gather(*tasks)
@@ -110,7 +110,7 @@ async def get_news(category: str):
 
     # 3. Store in local SQLite database cache for sub-millisecond future queries
     try:
-        cache_articles(news_list, category)
+        cache_articles(news_list, category, tone)
     except Exception as e:
         pass
 

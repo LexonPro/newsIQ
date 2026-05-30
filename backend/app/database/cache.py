@@ -28,22 +28,28 @@ def init_db():
             tldr TEXT,
             eli5 TEXT,
             impact TEXT,
+            tone TEXT DEFAULT 'Professional',
             created_at REAL
         )
     """)
+    # Safe schema migration if database already exists
+    try:
+        cursor.execute("ALTER TABLE article_cache ADD COLUMN tone TEXT DEFAULT 'Professional'")
+    except:
+        pass
     conn.commit()
     conn.close()
 
 
-def get_cached_news(category: str, max_age_seconds: int = 3600) -> List[Dict[str, Any]]:
-    """Retrieves fresh cached news articles for a given category."""
+def get_cached_news(category: str, tone: str = "Professional", max_age_seconds: int = 3600) -> List[Dict[str, Any]]:
+    """Retrieves fresh cached news articles for a given category and tone."""
     conn = get_db_connection()
     cursor = conn.cursor()
     min_time = time.time() - max_age_seconds
     
     cursor.execute(
-        "SELECT * FROM article_cache WHERE category = ? AND created_at > ? ORDER BY priority DESC",
-        (category, min_time)
+        "SELECT * FROM article_cache WHERE category = ? AND tone = ? AND created_at > ? ORDER BY priority DESC",
+        (category, tone, min_time)
     )
     rows = cursor.fetchall()
     conn.close()
@@ -51,8 +57,8 @@ def get_cached_news(category: str, max_age_seconds: int = 3600) -> List[Dict[str
     return [dict(row) for row in rows]
 
 
-def cache_articles(articles: List[Dict[str, Any]], category: str):
-    """Caches newly fetched and AI-enriched articles."""
+def cache_articles(articles: List[Dict[str, Any]], category: str, tone: str = "Professional"):
+    """Caches newly fetched and AI-enriched articles with their summarization tone."""
     conn = get_db_connection()
     cursor = conn.cursor()
     now = time.time()
@@ -61,8 +67,8 @@ def cache_articles(articles: List[Dict[str, Any]], category: str):
         cursor.execute(
             """
             INSERT OR REPLACE INTO article_cache 
-            (url, title, summary, priority, image, source, category, created_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            (url, title, summary, priority, image, source, category, tone, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 article.get("url"),
@@ -72,6 +78,7 @@ def cache_articles(articles: List[Dict[str, Any]], category: str):
                 article.get("image"),
                 article.get("source"),
                 category,
+                tone,
                 now
             )
         )

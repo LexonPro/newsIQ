@@ -81,7 +81,9 @@ class NewsService {
   static Future<List<dynamic>> fetchNews({
     String category = "technology",
   }) async {
-    final response = await _sendRequest("GET", "/news/$category");
+    final prefs = await SharedPreferences.getInstance();
+    final tone = prefs.getString("ai_tone") ?? "Professional";
+    final response = await _sendRequest("GET", "/news/$category?tone=$tone");
     return jsonDecode(response.body);
   }
 

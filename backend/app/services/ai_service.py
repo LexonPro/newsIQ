@@ -4,11 +4,25 @@ from app.utils.config import GEMINI_API_KEY
 client = genai.Client(api_key=GEMINI_API_KEY)
 
 
-def summarize_news(text):
+def summarize_news(text: str, tone: str = "Professional") -> str:
+    # Determine style instructions based on selected tone
+    if tone == "Humorous":
+        style_instruction = "in a highly sarcastic, witty, and humorous tone (make funny/wry remarks about the news)."
+    elif tone == "Bullish":
+        style_instruction = "in a highly finance-focused tone, explaining what this means for investors, markets, or business."
+    elif tone == "ELI5":
+        style_instruction = "like explaining to a 5-year old child in extremely simple terms with a basic analogy."
+    elif tone == "Factual":
+        style_instruction = "in a strictly objective, direct, and encyclopedic factual tone."
+    else:
+        style_instruction = "in a clear, professional, and standard informative newsroom tone."
 
     prompt = f"""
-    Summarize this news article in 2 short lines.
-    Keep it simple and factual.
+    Summarize this news article in exactly 2 short lines.
+    Rules:
+    - Summarize {style_instruction}
+    - Keep it simple and concise.
+    - Avoid preambles.
 
     Article:
     {text}
@@ -19,7 +33,7 @@ def summarize_news(text):
         contents=prompt
     )
 
-    return response.text
+    return response.text.strip()
 
 
 def get_priority_score(text):
