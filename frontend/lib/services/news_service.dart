@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class NewsService {
-  static const String defaultUrl = "http://10.37.146.192:8000";
+  static const String defaultUrl = "http://127.0.0.1:8000";
   static String activeUrl = defaultUrl;
   static bool hasInitialized = false;
 
@@ -15,8 +15,8 @@ class NewsService {
     try {
       final prefs = await SharedPreferences.getInstance();
       String? cached = prefs.getString("backend_url");
-      // Discard cached URL if it references the old inactive IP
-      if (cached != null && cached.contains("10.221.231.192")) {
+      // Discard cached URL if it references the old inactive IPs
+      if (cached != null && (cached.contains("10.221.231.192") || cached.contains("10.37.146.192"))) {
         await prefs.remove("backend_url");
         cached = null;
       }
@@ -36,9 +36,9 @@ class NewsService {
     try {
       final uri = Uri.parse("$activeUrl$path");
       if (method == "POST") {
-        return await http.post(uri, headers: headers, body: encodedBody).timeout(const Duration(seconds: 4));
+        return await http.post(uri, headers: headers, body: encodedBody).timeout(const Duration(seconds: 15));
       } else {
-        return await http.get(uri).timeout(const Duration(seconds: 4));
+        return await http.get(uri).timeout(const Duration(seconds: 15));
       }
     } catch (e) {
       debugPrint("HTTP request to $activeUrl$path failed: $e. Scanning candidates...");
@@ -59,9 +59,9 @@ class NewsService {
           final candidateUri = Uri.parse("$candidate$path");
           http.Response response;
           if (method == "POST") {
-            response = await http.post(candidateUri, headers: headers, body: encodedBody).timeout(const Duration(seconds: 2));
+            response = await http.post(candidateUri, headers: headers, body: encodedBody).timeout(const Duration(seconds: 5));
           } else {
-            response = await http.get(candidateUri).timeout(const Duration(seconds: 2));
+            response = await http.get(candidateUri).timeout(const Duration(seconds: 5));
           }
 
           // Handshake succeeded! Update active URL and save it to storage
