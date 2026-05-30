@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class NewsService {
-  static const String defaultUrl = "http://10.221.231.192:8000";
+  static const String defaultUrl = "http://10.37.146.192:8000";
   static String activeUrl = defaultUrl;
   static bool hasInitialized = false;
 
@@ -14,7 +14,13 @@ class NewsService {
     if (hasInitialized) return;
     try {
       final prefs = await SharedPreferences.getInstance();
-      activeUrl = prefs.getString("backend_url") ?? defaultUrl;
+      String? cached = prefs.getString("backend_url");
+      // Discard cached URL if it references the old inactive IP
+      if (cached != null && cached.contains("10.221.231.192")) {
+        await prefs.remove("backend_url");
+        cached = null;
+      }
+      activeUrl = cached ?? defaultUrl;
       hasInitialized = true;
     } catch (_) {
       activeUrl = defaultUrl;
@@ -29,35 +35,33 @@ class NewsService {
       final response = await http.get(Uri.parse("$activeUrl$path")).timeout(const Duration(seconds: 3));
       return response;
     } catch (e) {
-      debugPrint("Connection to $activeUrl failed: $e. Attempting self-healing fallback...");
+      debugPrint("Connection to $activeUrl failed: $e. Initiating self-healing network scan...");
       
-      // If we failed and are currently using the default hardcoded remote IP, attempt local fallbacks
-      if (activeUrl == defaultUrl) {
-        final List<String> fallbacks = [
-          // Android Emulator loopback to host
-          if (defaultTargetPlatform == TargetPlatform.android) "http://10.0.2.2:8000",
-          // Localhost loopback
-          "http://127.0.0.1:8000",
-          "http://localhost:8000",
-        ];
+      // Candidate list of all potential backend environments
+      final List<String> candidates = [
+        "http://127.0.0.1:8000",
+        "http://localhost:8000",
+        if (defaultTargetPlatform == TargetPlatform.android) "http://10.0.2.2:8000",
+        defaultUrl,
+      ];
 
-        for (final fallback in fallbacks) {
-          try {
-            debugPrint("Trying fallback backend: $fallback...");
-            final response = await http.get(Uri.parse("$fallback$path")).timeout(const Duration(seconds: 2));
-            
-            // Connection succeeded! Update activeUrl and cache it for future launches
-            activeUrl = fallback;
-            final prefs = await SharedPreferences.getInstance();
-            await prefs.setString("backend_url", fallback);
-            debugPrint("Successfully switched backend URL to: $fallback");
-            return response;
-          } catch (_) {
-            // Keep trying other fallbacks
-          }
+      for (final candidate in candidates) {
+        if (candidate == activeUrl) continue; // Skip the one we already know is failing
+        try {
+          debugPrint("Scanning backend candidate: $candidate...");
+          final response = await http.get(Uri.parse("$candidate$path")).timeout(const Duration(seconds: 2));
+          
+          // Connection succeeded! Update activeUrl and cache it for future launches
+          activeUrl = candidate;
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString("backend_url", candidate);
+          debugPrint("Successfully healed network connection! Active URL: $candidate");
+          return response;
+        } catch (_) {
+          // Continue scanning remaining candidates
         }
       }
-      // If fallbacks fail or we aren't using the default, rethrow the original exception
+      // If all candidates failed, rethrow the original error
       rethrow;
     }
   }
