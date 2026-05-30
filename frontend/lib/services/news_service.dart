@@ -79,4 +79,54 @@ class NewsService {
     final response = await _safeGet("/search/$query");
     return jsonDecode(response.body);
   }
+
+  /// Sends a safe POST request to the backend.
+  static Future<http.Response> _safePost(String path, Map<String, dynamic> body) async {
+    await _initializeUrl();
+    try {
+      final response = await http.post(
+        Uri.parse("$activeUrl$path"),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode(body),
+      ).timeout(const Duration(seconds: 10));
+      return response;
+    } catch (e) {
+      debugPrint("Post request failed to $activeUrl$path: $e");
+      rethrow;
+    }
+  }
+
+  /// Fetches a 3-bullet TL;DR summary from Gemini.
+  static Future<String> getTLDR(String title, String content) async {
+    final res = await _safePost("/news/tldr", {"title": title, "content": content});
+    return jsonDecode(res.body)["response"];
+  }
+
+  /// Fetches a child-friendly explanation from Gemini.
+  static Future<String> getELI5(String title, String content) async {
+    final res = await _safePost("/news/eli5", {"title": title, "content": content});
+    return jsonDecode(res.body)["response"];
+  }
+
+  /// Fetches Pros/Cons impact analysis from Gemini.
+  static Future<String> getImpact(String title, String content) async {
+    final res = await _safePost("/news/impact", {"title": title, "content": content});
+    return jsonDecode(res.body)["response"];
+  }
+
+  /// Sends the conversation thread to Gemini for dynamic article Q&A.
+  static Future<String> chatAboutArticle(
+    String title,
+    String summary,
+    List<Map<String, String>> history,
+    String message,
+  ) async {
+    final res = await _safePost("/news/chat", {
+      "title": title,
+      "summary": summary,
+      "history": history,
+      "message": message,
+    });
+    return jsonDecode(res.body)["response"];
+  }
 }
