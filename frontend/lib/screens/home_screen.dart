@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../services/news_service.dart';
 import '../widgets/news_card.dart';
+import '../widgets/breaking_news_card.dart';
 
 class HomeScreen extends StatefulWidget {
 
@@ -171,45 +172,69 @@ class _HomeScreenState extends State<HomeScreen> {
                 }
 
                 final news = snapshot.data!;
+                final breakingNews = news.take(3).toList();
+                final regularNews = news.skip(3).toList();
 
                 return RefreshIndicator(
-
                   onRefresh: () async {
-
                     setState(() {
-
                       loadNews();
                     });
                   },
-
-                  child: ListView.builder(
-
-                    itemCount: news.length,
-
-                    itemBuilder:
-                        (context, index) {
-
-                      final article =
-                          news[index];
-
-                      return NewsCard(
-
-                        title:
-                            article["title"] ??
-                                "No Title",
-
-                        summary:
-                            article["summary"] ??
-                                "No Summary",
-
-                        imageUrl:
-                            article["image"] ??
-                                "",
-
-                        articleUrl:
-                            article["url"] ?? "",
-                      );
-                    },
+                  child: ListView(
+                    children: [
+                      if (breakingNews.isNotEmpty) ...[
+                        const Padding(
+                          padding: EdgeInsets.only(left: 16, top: 12, bottom: 4),
+                          child: Text(
+                            "BREAKING NEWS",
+                            style: TextStyle(
+                              color: Colors.red,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 1.2,
+                              fontSize: 13,
+                            ),
+                          ),
+                        ),
+                        SizedBox(
+                          height: 220,
+                          child: ListView.builder(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: breakingNews.length,
+                            itemBuilder: (context, index) {
+                              final article = breakingNews[index];
+                              return BreakingNewsCard(
+                                title: article["title"] ?? "No Title",
+                                summary: article["summary"] ?? "No Summary",
+                                imageUrl: article["image"] ?? "",
+                                articleUrl: article["url"] ?? "",
+                              );
+                            },
+                          ),
+                        ),
+                        const SizedBox(height: 15),
+                        const Padding(
+                          padding: EdgeInsets.only(left: 16, bottom: 10),
+                          child: Text(
+                            "RECOMMENDED FEED",
+                            style: TextStyle(
+                              color: Colors.white70,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 1.2,
+                              fontSize: 13,
+                            ),
+                          ),
+                        ),
+                      ],
+                      ...regularNews.map((article) {
+                        return NewsCard(
+                          title: article["title"] ?? "No Title",
+                          summary: article["summary"] ?? "No Summary",
+                          imageUrl: article["image"] ?? "",
+                          articleUrl: article["url"] ?? "",
+                        );
+                      }).toList(),
+                    ],
                   ),
                 );
               },
