@@ -14,6 +14,12 @@ from app.services.ai_service import (
     generate_impact,
     chat_about_article,
 )
+from app.database.cache import (
+    get_cached_news,
+    cache_articles,
+    get_cached_quick_action,
+    update_cached_quick_action,
+)
 
 router = APIRouter()
 
@@ -72,17 +78,23 @@ async def enrich_article(article, use_ai: bool, default_priority: int):
 
 @router.get("/news/{category}")
 async def get_news(category: str):
+    # 1. Query local SQLite cache first for fresh articles (max age 1 hour)
+    try:
+        cached_articles = get_cached_news(category, max_age_seconds=3600)
+        if cached_articles and len(cached_articles) >= 5:
+            # Successfully loaded fresh cache, return instantly!
+            return cached_articles
+    except Exception as e:
+        # Fall through on database read failures to guarantee uptime
+        pass
 
+    # 2. Fetch fresh news from NewsAPI on cache miss
     url = f"https://newsapi.org/v2/top-headlines?country=us&category={category}&apiKey={NEWS_API_KEY}"
-
     response = requests.get(url)
-
     data = response.json()
-
     articles = data.get("articles", [])
 
     tasks = []
-
     priority = 100
 
     for i, article in enumerate(articles[:10]):
@@ -95,6 +107,12 @@ async def get_news(category: str):
 
     # Bubbles high-priority/breaking news to the top of the feed
     news_list.sort(key=lambda x: x.get("priority", 0), reverse=True)
+
+    # 3. Store in local SQLite database cache for sub-millisecond future queries
+    try:
+        cache_articles(news_list, category)
+    except Exception as e:
+        pass
 
     return news_list
 
@@ -138,30 +156,77 @@ async def chat_with_article_endpoint(request: ChatRequest):
 
 @router.post("/news/tldr")
 async def tldr_endpoint(request: QuickActionRequest):
+    # 1. Query SQLite cache by article title first
+    try:
+        cached = get_cached_quick_action(request.title, "tldr")
+        if cached:
+            return {"response": cached}
+    except Exception as e:
+        pass
+
+    # 2. Generate new TL;DR if cache misses
     response = await anyio.to_thread.run_sync(
         generate_tldr,
         request.title,
         request.content
     )
+
+    # 3. Save response in the cache
+    try:
+        update_cached_quick_action(request.title, "tldr", response)
+    except Exception as e:
+        pass
+
     return {"response": response}
 
 
 @router.post("/news/eli5")
 async def eli5_endpoint(request: QuickActionRequest):
+    # 1. Query SQLite cache by article title first
+    try:
+        cached = get_cached_quick_action(request.title, "eli5")
+        if cached:
+            return {"response": cached}
+    except Exception as e:
+        pass
+
+    # 2. Generate new ELI5 if cache misses
     response = await anyio.to_thread.run_sync(
         generate_eli5,
         request.title,
         request.content
     )
+
+    # 3. Save response in the cache
+    try:
+        update_cached_quick_action(request.title, "eli5", response)
+    except Exception as e:
+        pass
+
     return {"response": response}
 
 
 @router.post("/news/impact")
 async def impact_endpoint(request: QuickActionRequest):
+    # 1. Query SQLite cache by article title first
+    try:
+        cached = get_cached_quick_action(request.title, "impact")
+        if cached:
+            return {"response": cached}
+    except Exception as e:
+        pass
+
+    # 2. Generate new Impact analysis if cache misses
     response = await anyio.to_thread.run_sync(
         generate_impact,
         request.title,
         request.content
     )
+
+    # 3. Save response in the cache
+    try:
+        update_cached_quick_action(request.title, "impact", response)
+    except Exception as e:
+        pass
+
     return {"response": response}
-
